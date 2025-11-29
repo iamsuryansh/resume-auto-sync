@@ -1,0 +1,48 @@
+name: Sync Overleaf & Build PDF
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every day at midnight UTC
+  workflow_dispatch:      # Allows you to click "Run Workflow" manually
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. Download Source from Overleaf using your Cookie
+      - name: Fetch Overleaf Source
+        run: |
+          curl -L -H "Cookie: overleaf_session2=${{ secrets.OVERLEAF_COOKIE }}" \
+          "https://www.overleaf.com/project/${{ secrets.OVERLEAF_PROJECT_ID }}/download/zip" \
+          -o project.zip
+          unzip -o project.zip
+          rm project.zip
+
+      # 2. Compile the PDF
+      - name: Compile LaTeX
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex  # <--- CHECK THIS: Is your main file named main.tex or resume.tex?
+          latexmk_use_lualatex: false # Change to true if you use LuaLaTeX
+
+      # 3. Create a clean folder for the website
+      - name: Prepare Public Folder
+        run: |
+          mkdir public
+          mv main.pdf public/resume.pdf  # Renames it to 'resume.pdf' for a clean URL
+          # Optional: Add an index.html so people don't see a 404
+          echo '<meta http-equiv="refresh" content="0; url=resume.pdf" />' > public/index.html
+
+      # 4. Upload to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          force_orphan: true
