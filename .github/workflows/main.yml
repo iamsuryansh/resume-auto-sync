@@ -35,9 +35,9 @@ jobs:
       - name: Prepare Public Folder
         run: |
           mkdir public
-          mv main.pdf public/resume.pdf  # Renames it to 'resume.pdf' for a clean URL
+          mv main.pdf public/suryansh_jain_resume.pdf  # Renames it to 'resume.pdf' for a clean URL
           # Optional: Add an index.html so people don't see a 404
-          echo '<meta http-equiv="refresh" content="0; url=resume.pdf" />' > public/index.html
+          echo '<meta http-equiv="refresh" content="0; url=suryansh_jain_resume.pdf" />' > public/index.html
 
       # 4. Upload to GitHub Pages
       - name: Deploy to GitHub Pages
